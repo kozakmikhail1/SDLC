@@ -1,0 +1,31 @@
+# Компилируемые файлы
+*.class
+*.jar
+*.war
+*.ear
+
+# Папки сборки
+target/
+build/
+out/
+bin/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Временные файлы
+*.tmp
+*.log
+*.bak
+*.swp
+
+# Системные файлы
+.DS_Store
+Thumbs.db
