@@ -1,15 +1,47 @@
----
-# These are optional metadata elements. Feel free to remove any of them.
-date: {YYYY-MM-DD when the view was last updated}
----
+# SDD Templates / Шаблоны SDD
 
-# <!-- short title, representative of the view -->
+Software Design Description (SDD) — документ, определяющий **КАК** будет построена система.
 
-## Viewpoint
-➥ Identify the viewpoint of which this view is an instance.
+> **Разработан на кафедре ЭВМ, БГУИР в учебных целях.**  
+> ⚠️ **Терминология.** Современный термин — **SDD** (Software Design Description, IEEE 1016). Устаревший термин **SDS** (Software Design Specification) всё ещё встречается в старых проектах и стандарте IEEE 1016-1998.
 
-## Representation
-➥ The design view representation per the viewpoint selected, e.g., natural language description or a diagram or a combination thereof.
+## 📑 Выбор шаблона
 
-## More Information
-➥ Provide supporting context, links, and references that help stakeholders understand the design view. Reference relevant design decisions from Section 4 that influenced or resulted from this design element. If available, include references to the SRS requirement IDs that the design view implements.
+| Шаблон | Когда использовать |
+|--------|-------------------|
+| `sdd-template.md` | Основной шаблон с подробными подсказками |
+| `sdd-template-en.md` | Основной шаблон с подробными подсказками на английском языке |
+| `view-template.md` | Для модульной структуры: каждое View — отдельный файл |
+| `view-template-en.md` | Для модульной структуры: каждое View — отдельный файл на английском языке |
+
+## 🎯 Соответствие стандартам
+
+- **IEEE 1016-2009** — Systems and software engineering — Software design description
+- **ISO/IEC/IEEE 42010:2011** — Architecture description (viewpoints и views)
+
+## 📋 Пятнадцать точек зрения (Viewpoints)
+
+Согласно ISO 42010, архитектура описывается через представления (Views), каждое из которых отвечает определённой точке зрения (Viewpoint):
+
+1. **Context** — границы системы и внешние акторы
+2. **Composition** — сборка из компонентов
+3. **Logical** — статическая структура типов
+4. **Physical** — физическая инфраструктура
+5. **Structure** — внутренняя организация
+6. **Dependency** — связи и зависимости
+7. **Information** — структуры данных и persistence
+8. **Interface** — контракты между компонентами
+9. **Interaction** — взаимодействие в рантайме
+10. **Algorithm** — логика обработки
+11. **State Dynamics** — переходы состояний
+12. **Concurrency** — параллелизм и синхронизация
+13. **Patterns** — архитектурные и проектные паттерны
+14. **Deployment** — развёртывание на узлах
+15. **Resources** — управление ресурсами
+
+Не все Viewpoints обязательны — выбирайте те, которые адресуют задачи ваших стейкхолдеров (раздел 2.1).
+
+## 🔗 Связь с SRS и ADR
+
+- В разделе 3 (Design Views) указывайте ID требований из SRS, которые реализует данное представление.
+- В разделе 4 (Decisions) ведите записи архитектурных решений в формате MADR.
