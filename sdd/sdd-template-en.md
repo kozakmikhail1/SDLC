@@ -1,270 +1,302 @@
-# Software Design Description
-## For {{project name}}
+# Описание дизайна программного обеспечения
 
-Version 0.1  
-Prepared by {{author}}  
-{{organization}}  
-{{date_modified}}
+Для «Должок»
 
-## Table of Contents
+Версия 0.2
+
+Подготовил(а) Козак М.М. — архитектор системы
+
+БГУИР, кафедра ЭВМ, группа [номер группы]
+
+31.10.2026
+
+## Оглавление
+
 <!-- TOC -->
-* [1. Introduction](#1-introduction)
-  * [1.1 Document Purpose](#11-document-purpose)
-  * [1.2 Subject Scope](#12-subject-scope)
-  * [1.3 Definitions, Acronyms, and Abbreviations](#13-definitions-acronyms-and-abbreviations)
-  * [1.4 References](#14-references)
-  * [1.5 Document Overview](#15-document-overview)
-* [2. Design Overview](#2-design-overview)
-  * [2.1 Stakeholder Concerns](#21-stakeholder-concerns)
-  * [2.2 Selected Viewpoints](#22-selected-viewpoints)
-* [3. Design Views](#3-design-views)
-* [4. Decisions](#4-decisions)
-* [5. Appendixes](#5-appendixes)
+* [1. Введение](#1-introduction)
+  * [1.1 Назначение документа](#11-document-purpose)
+  * [1.2 Область применения](#12-subject-scope)
+  * [1.3 Определения, акронимы и сокращения](#13-definitions-acronyms-and-abbreviations)
+  * [1.4 Ссылки](#14-references)
+  * [1.5 Обзор документа](#15-document-overview)
+* [2. Обзор дизайна](#2-design-overview)
+  * [2.1 Задачи стейкхолдеров](#21-stakeholder-concerns)
+  * [2.2 Выбранные точки зрения](#22-selected-viewpoints)
+* [3. Проектные представления](#3-design-views)
+* [4. Решения](#4-decisions)
+* [5. Приложения](#5-appendixes)
 <!-- TOC -->
 
-## Revision History
+## История изменений
 
 | Name | Date | Reason For Changes | Version |
 |------|------|--------------------|---------|
+| Козак М.М. | 31.10.2026 | Первая версия. Основана на SRS 0.2 (раунд 2 переписки) | 0.1 |
 |      |      |                    |         |
-|      |      |                    |         |
 
-## 1. Introduction
-💬 _Provides an overview of the document and orients the reader to the system being designed._
+---
 
-### 1.1 Document Purpose
-💬 _Clarifies why this SDD exists, what it describes, and who should use it._
+## 1. Введение {#1-introduction}
 
-➥ State the purpose of this SDD in 2–4 sentences. Identify its intended audiences (e.g., developers, architects, maintainers, operators) and how they use it across the lifecycle.
+Документ описывает архитектуру и проектные решения веб-приложения «Должок» на основе SRS версии 0.2 (`srs/srs.md`).
 
-💡 Tips: 
-- Mention related documents (vision/scope, BRD, SRS, roadmap, contracts) if relevant.
+### 1.1 Назначение документа {#11-document-purpose}
 
-### 1.2 Subject Scope
-💬 _Defines the scope, purpose, and boundaries of the design._
+SDD определяет, **КАК** будет устроена система, чтобы выполнить требования SRS. Документ предназначен для разработчиков (реализация, junior-разработчик), тестировщиков (тест-кейсы по компонентам) и Заказчика (обзор решений и сроков). Каждое значимое решение зафиксировано в ADR (`adr/`).
 
-➥ Identify the system being designed by name and version/release. In 3–5 sentences, describe its primary purpose, key capabilities, and intended outcomes. Clearly list inclusions and exclusions when this SDD covers part of a larger system.
+### 1.2 Область применения {#12-subject-scope}
 
-💡 Tips:
-- Connect capabilities to business objectives and reference a separate vision/scope document if relevant.
-- Include a simple diagram if it clarifies boundaries within a larger system.
+Описание охватывает серверную часть (Java, Spring Boot), клиентскую часть (React, Vite), базу данных (PostgreSQL), отправку почты через внешний SMTP и окружение Docker. Нативные мобильные приложения, интеграции с банками и групповые траты с автоматическим разделением счёта в описание не входят.
 
-### 1.3 Definitions, Acronyms, and Abbreviations
-➥ Help readers understand specialized terms and notation by providing a glossary of domain terms, acronyms, and abbreviations used in the SDD.
+### 1.3 Определения, акронимы и сокращения {#13-definitions-acronyms-and-abbreviations}
 
-💡 Tips:
-- Keep entries alphabetized and consistent across the document set.
+| Term | Definition |
+|------|------------|
+| ADR | Architectural Decision Record — запись архитектурного решения |
+| API | Application Programming Interface — интерфейс взаимодействия клиента и сервера |
+| Outbox | Таблица в БД, куда записываются письма в одной транзакции с данными, а затем отправляются фоновым процессом |
+| SPA | Single Page Application — одностраничное веб-приложение |
+| SRS | Software Requirements Specification — спецификация требований |
 
-| Term | Definition                                                                                                               |
-|------|--------------------------------------------------------------------------------------------------------------------------|
-| API  | Application Programming Interface - A set of definitions and protocols for building and integrating application software |
-| SDD  | Software Design Document - A document that describes the intended purpose, requirements, and nature of a software        |
+### 1.4 Ссылки {#14-references}
 
-### 1.4 References
-💬 _Lists external sources that are normative or informative for this SDD._
+| Документ | Тип | Расположение |
+|----------|-----|--------------|
+| Спецификация требований к ПО «Должок», версия 0.2 | нормативный | `srs/srs.md` |
+| Архитектурные решения ADR-0001…ADR-0005 | нормативный | `adr/` |
+| План реализации по итерациям | справочный | `docs/plan/iterations.md` |
+| IEEE 830-1998 — SRS | справочный | — |
 
-➥ Cite standards, contracts, policies, interface specs, UX style guides, use-case docs, architectural decisions, or a vision/scope document. For each reference, include title, author/owner, version, date, and location/URL. Indicate whether each reference is normative (binding) or informative (guidance).
+### 1.5 Обзор документа {#15-document-overview}
 
-💡 Tips:
-- Prefer stable links or repository paths over volatile URLs.
+Раздел 2 описывает задачи стейкхолдеров и выбранные точки зрения. Раздел 3 содержит проектные представления DES-001…DES-008 с трассировкой на требования SRS. Раздел 4 перечисляет решения (ADR). Раздел 5 — приложения: API и модель данных.
 
-### 1.5 Document Overview
-💬 _Brief guide to the structure of the SDD so readers can quickly find what they need._
+---
 
-➥ Summarize what each major section covers (Design, Decisions, Appendixes), note any document conventions, and mention how updates and revision history are managed.
+## 2. Обзор дизайна {#2-design-overview}
 
-💡 Tips:
-- Keep to 3–5 sentences focusing on navigation and conventions.
+### 2.1 Задачи стейкхолдеров {#21-stakeholder-concerns}
 
-## 2. Design Overview
-💬 _Describes the nature and approach of the system architecture and design._
+| Стейкхолдер | Задача | Где решается |
+|-------------|--------|--------------|
+| Заказчик | Срок 12 недель, стоимость без скачков | Раздел 3 (DES-008), `docs/plan/iterations.md` |
+| Пользователь | Точные суммы, быстрый ответ, понятный интерфейс | DES-003, DES-006, DES-007 |
+| Разработчики | Понятная структура пакетов и модулей | DES-002 |
+| Тестировщики | Проверяемые границы компонентов | DES-001, DES-005 |
+| Администратор | Блокировка учётных записей | DES-003 |
 
-### 2.1 Stakeholder Concerns
-💬 _Defines key stakeholders and their design-related interests._
+### 2.2 Выбранные точки зрения {#22-selected-viewpoints}
 
-➥ Identify stakeholder types (e.g., users, developers, operators), their main concerns (e.g., availability, maintainability, risk mitigation) and the viewpoints or design elements of this document that address them.
+#### 2.2.1 Контекст {#221-context}
 
-### 2.2 Selected Viewpoints
-💬 _Defines the perspectives used to represent and reason about the system's design._
+Пользователь работает в браузере с SPA. SPA обращается к REST API серверной части. API читает и пишет в PostgreSQL и через SMTP отправляет письма. Внешние системы: SMTP-сервис. Больше внешних интеграций нет.
 
-➥ Identify and describe the viewpoints that were selected to address the stakeholders' concerns identified in Section 2.1. Each viewpoint addresses specific stakeholder concerns and utilizes visualization languages (e.g., UML, C4, sequence diagrams). Note which concerns each viewpoint addresses.
+#### 2.2.2 Композиция {#222-composition}
 
-#### 2.2.1 Context
-💬 _Defines the system as a black box, identifying its boundaries and its environment._
+Серверная часть состоит из модулей: `auth` (регистрация, вход, сессии), `friends` (приглашения и дружба), `debt` (долги, подтверждение, погашения), `balance` (расчёт баланса), `notification` (outbox и отправка писем), `admin` (блокировка), `common` (ошибки, валидация, конфигурация).
 
-**Addresses:** System boundaries, environment actors (users, external systems) and offered services (use cases).  
-**Typical Languages:** UML Use Case Diagram, C4 Context Diagram.
+#### 2.2.3 Логическое представление {#223-logical}
 
-#### 2.2.2 Composition
-💬 _Describes how the system is recursively assembled from major constituent parts (subsystems, components, or modules), and how those are organized and relate to one another_
+Каждый модуль делится на три слоя: контроллер (REST), сервис (бизнес-логика, транзакции), репозиторий (доступ к данным). Контроллеры не обращаются к репозиториям напрямую (проверка ArchUnit, ADR-0001).
 
-**Addresses:** Identify the major design elements; allocation of responsibilities, and localization of functionality; modularity (reuse, buy-vs-build) and integration.  
-**Typical Languages:** UML Component Diagram, Hierarchical Decomposition Diagram, UML Package (functional), Deployment (runtime) Diagram.
+#### 2.2.4 Физическое представление {#224-physical}
 
-💡 Tips:
-- Focus on how components fit together and where external, reused, or third-party components integrate.
-- Consider organizing into subcategories for clarity: Functional (logical) decomposition and Runtime (physical) decomposition.
+Окружение Docker Compose: контейнер `web` (nginx, раздаёт статику React и проксирует `/api`), контейнер `api` (Spring Boot, JRE 21), контейнер `db` (PostgreSQL 16). SMTP — внешний сервис, адрес задаётся переменной окружения.
 
-#### 2.2.3 Logical
-💬 _Captures the static design structure of the system in terms of types and their implementation (class, interface) and their relationships._
+#### 2.2.5 Структура {#225-structure}
 
-**Addresses:** Development and reuse of appropriate abstractions and their implementations; encapsulation and dependencies among entities.  
-**Typical Languages:** UML Class Diagram, UML Object Diagram.
+Ключевые сущности: `User`, `Friendship`, `Debt`, `Repayment`, `OutboxMessage`. Связи: пользователь — дружба (два пользователя), долг (кредитор и должник), погашения (многие к одному долгу).
 
-💡 Tips: 
-- Focus on the static and stable abstractions that collaborate to fulfill system goals. 
-- Complements Composition (assembly) by clarifying the abstractions that underlie it.
+#### 2.2.6 Зависимости {#226-dependency}
 
-#### 2.2.4 Physical
-💬 _Depicts the tangible system infrastructure._
+Модуль `debt` зависит от `friends` (проверка дружбы) и `notification` (постановка письма в outbox). Модуль `balance` читает `debt`, но не меняет его. Модуль `auth` не зависит от бизнес-модулей. Циклических зависимостей нет.
 
-**Addresses:** Hardware configuration, physical topology, and physical constraints.  
-**Typical Languages:** Hardware Block Diagram, Network Topology Diagram, Rack Layout, Cloud Infrastructure Diagram.
+#### 2.2.7 Информация {#227-information}
 
-💡 Tips:
-- Complements Deployment by showing the platform topology on which software is mapped.
+Модель данных — в разделе 5 (приложение А). Деньги хранятся в `NUMERIC(14,2)` (ADR-0003). Пароли хранятся в виде bcrypt-хэша.
 
-#### 2.2.5 Structure
-💬 _Documents internal organization of components and their parts, ports, and connectors_.
+#### 2.2.8 Интерфейс {#228-interface}
 
-**Addresses:** Internal composition of complex entities; reusability of fine-grained components.  
-**Typical Languages:** UML composite structure diagram, UML class diagram, UML package diagram, C4 Container diagram.
+REST API в формате JSON, все изменяющие запросы требуют CSRF-токен. Список endpoint'ов — в приложении Б. Ошибки возвращаются в едином формате `{code, message, field}`.
 
-💡 Tips: 
-- Complements Composition by focusing on interfaces and connectors.
+#### 2.2.9 Взаимодействие {#229-interaction}
 
-#### 2.2.6 Dependency
-💬 _Shows how design elements interconnect and access each other, illustrating import, service, or build-time relationships._
+Создание долга: клиент отправляет `POST /api/debts` → сервис проверяет дружбу и данные → в одной транзакции сохраняет долг и письмо в outbox → возвращает `201`. Фоновый процесс отправляет письмо. Подробный сценарий — DES-004.
 
-**Addresses:** Integration needs and prioritization; coupling and dependencies; root cause and change impact analysis.  
-**Typical Languages:** UML Package Diagram, Dependency Graph, UML Component Diagram
+#### 2.2.10 Алгоритм {#2210-algorithm}
 
-💡 Tips: 
-- Draw dependencies directionally ("uses", "requires", "provides").
+Баланс пользователя по валюте `c`: сумма остатков активных долгов, где пользователь кредитор, минус сумма остатков активных долгов, где он должник. Учитываются только статусы `ACTIVE`. Остаток долга = сумма − сумма погашений. Округление — `HALF_UP` до двух знаков. Подробно — DES-006.
 
-#### 2.2.7 Information
-💬 _Models the persistent data structure, its relationships, and the mechanisms for access and management._
+#### 2.2.11 Динамика состояний {#2211-state-dynamics}
 
-**Addresses:** Data structure and semantics; persistence; metadata; data integrity; data management and access schemes.  
-**Typical Languages:** Entity-Relationship Diagram, UML Class Diagram, Logical Data Model.
+Состояния долга: `PENDING_CONFIRMATION` → `ACTIVE` (вторая сторона подтвердила) или `REJECTED` (отклонила). `ACTIVE` → `CLOSED`, когда остаток равен 0. Редактирование и удаление разрешены только в `PENDING_CONFIRMATION` и только автору (релиз 2, F-09). Погашение разрешено только в `ACTIVE`.
 
-💡 Tips: 
-- Use consistent naming with the Logical viewpoint to maintain type alignment.
+#### 2.2.12 Параллелизм {#2212-concurrency}
 
-#### 2.2.8 Interface
-💬 _Specifies the externally visible interfaces among components, subsystems, or with external systems._
-
-**Addresses:** Interoperability through contract definition; encapsulation, and integration risks.  
-**Typical Languages:** API specifications, IDLs, function/method signature, UML Component Diagram
-
-#### 2.2.9 Interaction
-💬 _Illustrates how entities collaborate at runtime via messages: who talks to whom, in what order, and under which conditions._
-
-**Addresses:** Allocation of responsibilities; message sequencing, timing, and synchronization; error propagation; distributed components state transition logic and concurrency.  
-**Typical Languages:** UML Sequence Diagram, UML Collaboration Diagram, BPMN Process Flows.
-
-💡 Tips:
-- Provide representative "happy-path" and "failure-path" scenarios.
-- If concurrency affects ordering, annotate lifelines/regions and reference the Concurrency viewpoint.
-
-#### 2.2.10 Algorithm
-💬 _Details the internal processing logic of an operation: steps, decisions, loops, and error handling, emphasizing critical or novel algorithms within the design._
-
-**Addresses:** Computational complexity; time-space processing logic; performance, determinism, and reproducibility.  
-**Typical Languages:** Pseudocode, flowchart, Decision Table mathematical formulation.
-
-💡 Tips: 
-- Tie each algorithm to its owning class/component.
-- Consider referencing Interface contracts to link invariants and pre/postconditions.
-- Consider referencing Resource impacts if performance or space is critical.
-
-#### 2.2.11 State Dynamics
-💬 _Details how system or component states evolve in response to events or stimuli over time._
-
-**Addresses:** Modes/states, transitions, events/triggers, guards, entry/exit effects, concurrency regions, synchronization.  
-**Typical Languages:** UML State Machine Diagram, State Transition Table, Automata, Petri Net.
-
-💡 Tips: 
-- Complements Interaction/Algorithm when behavior differs by state.
-
-#### 2.2.12 Concurrency
-💬 _Describes how the design handles parallelism, synchronization, and coordination among concurrent entities._
-
-**Addresses:** Thread/process structure; synchronization and locking; concurrency control; event ordering; parallel execution and race conditions.  
-**Typical Languages:** UML Activity Diagram, UML Sequence and State Diagram, actor model.
-
-💡 Tips:
-- Complements other dynamic viewpoints when parallelism, synchronization, or ordering guarantees are first-class concerns that would clutter those views.
-
-#### 2.2.13 Patterns
-💬 _Identifies reusable design ideas and collaborations—design patterns, architectural styles, or framework templates—that guide or constrain the system's structure and behavior._
-
-**Addresses:** Reuse of proven solutions; consistency of architectural style; collaboration roles and connectors; template-based component structures.  
-**Typical Languages:** UML Composite Structure Diagram, UML Package/Class Diagram, Architecture Description Language.
-
-💡 Tips: 
-- Record which patterns are applied and where.
-
-#### 2.2.14 Deployment
-💬 _Describes how software entities are mapped onto the physical execution environment, what runs where and how nodes are connected_
-
-**Addresses:** Component-to-node allocation; deployment topology; communication mechanisms; distribution, replication, and scaling; operational constraints.  
-**Typical Languages:** UML Deployment Diagram, Infrastructure-as-Code topology, Network Diagram, CI/CD pipeline diagrams.
-
-💡 Tips: 
-- Include environment tiers and deployment sequencing if relevant.
-
-#### 2.2.15 Resources
-💬 _Specifies use and management of shared or limited resources, such as memory, bandwidth, threads, or file handles._
-
-**Addresses:** Resource utilization and allocation; contention and availability; performance bottlenecks; locks and priorities; resource management strategies.  
-**Typical Languages:** UML Class Diagram (for resource entities), UML Real-Time Profile, UML Object Constraint Language (OCL), Resource Allocation Table.
-
-💡 Tips: 
-- Cross-reference with Concurrency (timing) and Deployment (placement) views for a full runtime picture.
-
-## 3. Design Views
-💬 _Documents the main architectural and design elements that define the system._
-
-➥ Define design views to a level of detail sufficient to implement the system (prescriptive architecture) or to understand how to operate or maintain the existing product (descriptive architecture). Use unique identifiers, keep elements concise and modular, and include diagrams or links where applicable. Reference relevant design decisions from Section 4 that this view represents. Include applicable SRS requirement IDs that this element implements when available.
-
-📃 Template:
-```markdown
-- ID: [NNN]-{title}
-- Title: Short, descriptive name of the view.
-- Viewpoint: The viewpoint of which this view is an instance.
-- Representation: The design view representation per the viewpoint and language selected, e.g., natural language description or a diagram or a combination thereof.
-- More Information: Additional context. Links to related artifacts.
+Два одновременных погашения одного долга не должны превысить остаток. Для этого у долга есть поле `version` (оптимистичная блокировка JPA). Второй запрос получает конфликт `409` и повторяется клиентом.
+
+#### 2.2.13 Паттерны {#2213-patterns}
+
+Layered architecture, Repository, DTO для API, Transactional Outbox для почты, Optimistic Locking для погашений.
+
+#### 2.2.14 Развёртывание {#2214-deployment}
+
+Один экземпляр `api` и одна БД. Миграции схемы — Flyway. Конфигурация через переменные окружения (`SPRING_DATASOURCE_URL`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `SESSION_SECRET`).
+
+#### 2.2.15 Ресурсы {#2215-resources}
+
+Для учебной нагрузки достаточно одной виртуальной машины: 2 vCPU, 2 ГБ RAM, 10 ГБ диска. Для нагрузочного теста REQ-PERF-002 — отдельная машина для генератора нагрузки.
+
+---
+
+## 3. Проектные представления {#3-design-views}
+
+- **ID**: DES-001-контекст
+- **Title**: Контекст системы и внешние интерфейсы
+- **Viewpoint**: Контекст (2.2.1)
+- **Representation**: Пользователь → браузер (SPA) → REST API → PostgreSQL; REST API → SMTP.
+- **More Information**: Требования REQ-NOT-001, REQ-NOT-002, REQ-SEC-002, REQ-PERF-001. Решения ADR-0001, ADR-0005.
+
+- **ID**: DES-002-композиция
+- **Title**: Пакеты и модули серверной части
+- **Viewpoint**: Композиция (2.2.2), Логическое (2.2.3)
+- **Representation**: Пакеты `ru.dolzhok.auth`, `.friends`, `.debt`, `.balance`, `.notification`, `.admin`, `.common`; в каждом пакете подпакеты `web`, `service`, `persistence`.
+- **More Information**: Требования REQ-AUTH-001…003, REQ-FR-001…003, REQ-DEBT-001…008, REQ-PAY-001…003, REQ-BAL-001…003, REQ-NOT-001…002, REQ-ADM-001. Решение ADR-0001.
+
+- **ID**: DES-003-безопасность
+- **Title**: Аутентификация, сессии и разграничение доступа
+- **Viewpoint**: Структура (2.2.5), Взаимодействие (2.2.9)
+- **Representation**: Spring Security: фильтр сессии, cookie `HttpOnly; Secure; SameSite=Strict`; bcrypt с cost 12; счётчик неудачных попыток в `users.failed_attempts` и `users.locked_until`; проверка владельца в сервисе долгов (`debt.creditor_id = me OR debt.debtor_id = me`); блокировка администратором (`users.blocked`).
+- **More Information**: Требования REQ-AUTH-001…003, REQ-SEC-001…005, REQ-ADM-001. Решение ADR-0004.
+
+- **ID**: DES-004-уведомления
+- **Title**: Отправка писем через outbox
+- **Viewpoint**: Взаимодействие (2.2.9), Физическое (2.2.4)
+- **Representation**: При создании долга, погашении и закрытии сервис записывает письмо в `outbox_messages` в той же транзакции. Планировщик каждые 30 секунд отправляет письма со статусом `NEW` или `RETRY`; после 5 неудачных попыток — статус `FAILED`, событие в журнал.
+- **More Information**: Требования REQ-NOT-001, REQ-NOT-002, REQ-NOT-001, REQ-NOT-002. Решение ADR-0005.
+
+- **ID**: DES-005-данные
+- **Title**: Модель данных и оптимистичные блокировки
+- **Viewpoint**: Информация (2.2.7), Параллелизм (2.2.12)
+- **Representation**: Таблицы из приложения А. Поле `debts.version` для оптимистичной блокировки. Суммы — `NUMERIC(14,2)`, валюта — `CHAR(3)` с ограничением `IN ('BYN','USD','EUR','RUB')`.
+- **More Information**: Требования REQ-DEBT-002, REQ-DEBT-003, REQ-PAY-002, REQ-QUAL-007. Решение ADR-0003.
+
+- **ID**: DES-006-баланс
+- **Title**: Расчёт баланса по валютам
+- **Viewpoint**: Алгоритм (2.2.10)
+- **Representation**: Запрос агрегирует остатки `ACTIVE`-долгов по ролям пользователя и валюте. Сумма округляется до двух знаков `HALF_UP`. Результат кешируется на время запроса, но не между запросами (для простоты и актуальности).
+- **More Information**: Требования REQ-BAL-001, REQ-BAL-002 (баланс), REQ-PERF-001 (загрузка главной ≤ 2 с). Решение ADR-0003.
+
+- **ID**: DES-007-интерфейс
+- **Title**: Клиентская часть и экраны
+- **Viewpoint**: Интерфейс (2.2.8), Физическое (2.2.4)
+- **Representation**: SPA на React + Vite. Экраны: главная (`srs/sysml/dashboard.sysml`), добавление долга (`srs/sysml/add_debt.sysml`), вход и регистрация. Сборка через `vite build`; статика раздаётся nginx.
+- **More Information**: Требования REQ-UI-001…005, REQ-SEC-002, REQ-QUAL-004. Решение ADR-0002.
+
+- **ID**: DES-008-процесс
+- **Title**: Итерационная реализация и контроль сроков
+- **Viewpoint**: Развёртывание (2.2.14), Ресурсы (2.2.15)
+- **Representation**: 6 итераций по 2 недели; распределение функций, оценки и стоимость — в `docs/plan/priorities-and-estimates.md` и `docs/plan/iterations.md`. Junior-разработчик работает с итерации 1 по итерацию 4.
+- **More Information**: Ограничения 2.3 SRS; План реализации.
+
+---
+
+## 4. Решения {#4-decisions}
+
+| ID | Название | Статус | Файл |
+|----|----------|--------|------|
+| ADR-0001 | Серверный фреймворк — Spring Boot 3 | принято | `adr/ADR-0001-server-framework.md` |
+| ADR-0002 | Клиентская часть — React SPA на Vite | принято | `adr/ADR-0002-client-build-tool.md` |
+| ADR-0003 | Хранение денежных сумм — NUMERIC(14,2) и BigDecimal | принято | `adr/ADR-0003-money-storage.md` |
+| ADR-0004 | Аутентификация — серверные сессии с cookie | принято | `adr/ADR-0004-authentication.md` |
+| ADR-0005 | Отправка почты — outbox в PostgreSQL | принято | `adr/ADR-0005-mail-delivery.md` |
+
+---
+
+## 5. Приложения {#5-appendixes}
+
+### Приложение А. Модель данных (фрагмент DDL)
+
+```sql
+CREATE TABLE users (
+  id              BIGSERIAL PRIMARY KEY,
+  email           VARCHAR(254) NOT NULL UNIQUE,
+  name            VARCHAR(100) NOT NULL,
+  password_hash   VARCHAR(100) NOT NULL,
+  blocked         BOOLEAN NOT NULL DEFAULT FALSE,
+  failed_attempts INT NOT NULL DEFAULT 0,
+  locked_until    TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE friendships (
+  id          BIGSERIAL PRIMARY KEY,
+  user_a      BIGINT NOT NULL REFERENCES users(id),
+  user_b      BIGINT NOT NULL REFERENCES users(id),
+  status      VARCHAR(16) NOT NULL CHECK (status IN ('PENDING','ACCEPTED','REJECTED')),
+  created_by  BIGINT NOT NULL REFERENCES users(id),
+  UNIQUE (user_a, user_b)
+);
+
+CREATE TABLE debts (
+  id            BIGSERIAL PRIMARY KEY,
+  creditor_id   BIGINT NOT NULL REFERENCES users(id),
+  debtor_id     BIGINT NOT NULL REFERENCES users(id),
+  amount        NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+  remaining     NUMERIC(14,2) NOT NULL CHECK (remaining >= 0),
+  currency      CHAR(3) NOT NULL CHECK (currency IN ('BYN','USD','EUR','RUB')),
+  debt_date     DATE NOT NULL,
+  due_date      DATE,
+  comment       VARCHAR(500),
+  status        VARCHAR(24) NOT NULL CHECK (status IN ('PENDING_CONFIRMATION','ACTIVE','REJECTED','CLOSED')),
+  version       BIGINT NOT NULL DEFAULT 0,
+  created_by    BIGINT NOT NULL REFERENCES users(id),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (creditor_id <> debtor_id),
+  CHECK (due_date IS NULL OR due_date >= debt_date)
+);
+
+CREATE TABLE repayments (
+  id           BIGSERIAL PRIMARY KEY,
+  debt_id      BIGINT NOT NULL REFERENCES debts(id),
+  amount       NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+  paid_on      DATE NOT NULL,
+  recorded_by  BIGINT NOT NULL REFERENCES users(id)
+);
+
+CREATE TABLE outbox_messages (
+  id              BIGSERIAL PRIMARY KEY,
+  recipient       VARCHAR(254) NOT NULL,
+  subject         VARCHAR(200) NOT NULL,
+  body            TEXT NOT NULL,
+  status          VARCHAR(12) NOT NULL CHECK (status IN ('NEW','RETRY','SENT','FAILED')),
+  attempts        INT NOT NULL DEFAULT 0,
+  next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 ```
 
-💡 Tips:
-- This section should contain enough information to implement the system (prescriptive architecture) or to understand how to operate or maintain the existing product (descriptive architecture).
-- If available, include references to the SRS requirement IDs that the design view implements. This demonstrates how requirements are addressed by the design.
-- Reference relevant design decisions from Section 4 that influenced or resulted from this design element.
+### Приложение Б. Список endpoint'ов REST API (фрагмент)
 
-## 4. Decisions
-💬 Captures significant architectural or design decisions and their rationale.
+| Метод и путь | Назначение | Требования |
+|--------------|------------|------------|
+| POST /api/auth/register | Регистрация | REQ-AUTH-001 |
+| POST /api/auth/login | Вход | REQ-AUTH-003, REQ-SEC-005 |
+| POST /api/auth/logout | Выход | REQ-AUTH-003 |
+| GET /api/me | Текущий пользователь | REQ-AUTH-003 |
+| POST /api/friends/invitations | Приглашение в друзья | REQ-FR-001, REQ-FR-002 |
+| POST /api/friends/invitations/{id}/accept | Принять приглашение | REQ-FR-001, REQ-FR-002 |
+| GET /api/friends | Список друзей с балансом | REQ-FR-001, REQ-FR-002, REQ-BAL-001, REQ-BAL-002 |
+| POST /api/debts | Создать долг | REQ-DEBT-001 |
+| POST /api/debts/{id}/confirm | Подтвердить долг | REQ-DEBT-005 |
+| POST /api/debts/{id}/reject | Отклонить долг | REQ-DEBT-005 |
+| POST /api/debts/{id}/repayments | Зафиксировать погашение | REQ-PAY-001 |
+| GET /api/debts?status=ACTIVE | Список активных долгов | REQ-DEBT-001 |
+| GET /api/debts/history | История долгов | REQ-PAY-003, REQ-BAL-003 |
+| GET /api/balance | Баланс по валютам | REQ-BAL-001, REQ-BAL-002 |
+| POST /api/admin/users/{id}/block | Блокировка пользователя | REQ-ADM-001 |
 
-➥ Document significant architectural decisions that have substantial long-term impact on the system's structure,
-behavior, or quality attributes.
+### Приложение В. Модели интерфейса (SysMLv2)
 
-```markdown
-- ID: [NNN]-{title}
-- Title: short title, representative of solved problem and found solution.
-- Context: Describe the context and problem statement.
-- Options: Enumerate considered alternatives.
-- Outcome: Chosen option: "{title of option 1}", because {justification}.
-- More Information: Additional context. Links to related artifacts.
-```
-
-💡 Tips:
-- Keep one decision per record.
-- Consider adopting MADR (Markdown Architecture Decision Record) pattern directly to document decisions.
-
-## 5. Appendixes
-💬 _Optional supporting material that aids understanding without being normative._
-
-➥ Include glossaries, data dictionaries, models/diagrams, sample datasets, or change-impact analyses that support the main sections. Reference rather than duplicate content when possible.
-
-💡 Tips:
-- Keep appendixes organized and referenced from the main text.
+- `srs/sysml/dashboard.sysml` — главная страница;
+- `srs/sysml/add_debt.sysml` — добавление долга;
+- `srs/images/dashboard.png`, `srs/images/add-debt.png` — рисунки моделей.
